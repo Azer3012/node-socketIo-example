@@ -5,14 +5,15 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Socket Io</title>
+    <style>
+        .messageArea{
+            height: 300px;
+            width: 250px;
+            overflow-y: scroll;
+        }
+    </style>
 </head>
-<style>
-    .messageArea{
-        height: 300px;
-        width: 250px;
-        overflow-y: scroll;
-    }
-</style>
+
 <body>
     <pre class="messageArea"></pre>
     <input type="text" placeholder="write message">
@@ -21,39 +22,61 @@
     <script src="https://cdn.socket.io/4.5.3/socket.io.min.js"></script>
 
     <script>
-       const socket=io({autoConnect:false})
+       const socket=io("/chat",{autoConnect:false})
+       socket.connect()
+
 
        const username=prompt("Enter your name")
+
+       const room = prompt("Enter room")
+
+
 
        const messageArea=document.querySelector(".messageArea")
        const btn=document.querySelector(".btn")
 
        const input=document.querySelector("input")
 
-       socket.connect()
+
+      
 
        setTimeout(()=>{
-        socket.emit('new user',username)
+        socket.emit('join room',{username,room})
        },500)
 
        socket.on("new user",(newUser)=>{
-        const text="new user joined to chat:" + newUser+ "\n"
+        const text= newUser+ "joined \n"
         messageArea.append(text)
+        
        })
 
        socket.on("new message",(data)=>{
-        const text=`${data[0].username} : ${data[0].message}`
+        
+        const text=`${data.username} : ${data.message} "\n"`
+        
+        messageArea.append(text)
 
-        console.log(data);
+       })
+
+       socket.on("user left",(username)=>{
+        const text=`${username} left "\n"`
+        
         messageArea.append(text)
        })
 
-       btn.addEventListener('click',()=>{
+      
+
+       btn.onclick=()=>{
         const msg=input.value;
+        console.log(msg);
         if(msg){
             socket.emit("new message",{username,message:msg})
+            const text=`${username} : ${msg} "\n"`
+            messageArea.append(text)
         }
-       })
+       }
+
+       
      
     </script>
 </body>
